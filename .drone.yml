@@ -1,0 +1,21 @@
+---
+kind: pipeline
+name: nightlybuild
+
+steps:
+- name: configure
+  image: debian:10
+  commands:
+    - apt update && apt install -y git dh-autoreconf rsync
+    - ./autogen.sh && ./configure --sysconfdir=/etc
+
+- name: publish
+  image: plugins/github-release
+  settings:
+    api_key:
+      from_secret: github_token
+    files:
+      - rsnapshot
+      - rsnapshot-diff
+  when:
+    event: tag
